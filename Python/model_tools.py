@@ -32,6 +32,16 @@ from keras_tuner import HyperModel, Hyperband
 random.seed(1234)
 tf.random.set_seed(1234)
 
+
+'''
+SklearnTuner 클래스
+ - 각 Trial에서 print 끄기
+'''
+class MySklearnTuner(keras_tuner.tuners.SklearnTuner):
+    def search(self, *args, **kwargs):
+        self._display.verbose = False
+        return super().search(*args, **kwargs) #부모 클래스의 search
+
 '''
 모델링 클래스
 '''
@@ -141,7 +151,7 @@ class model():
             return rf_model
         
         # Keras Tuner
-        tuner = keras_tuner.tuners.SklearnTuner(
+        tuner = MySklearnTuner(
                 oracle=keras_tuner.oracles.BayesianOptimizationOracle(
                     objective=keras_tuner.Objective('score', 'min'),
                     max_trials=10,
@@ -209,7 +219,7 @@ class model():
         
         
         # Keras Tuner
-        tuner = keras_tuner.tuners.SklearnTuner(
+        tuner = MySklearnTuner(
                 oracle=keras_tuner.oracles.BayesianOptimizationOracle(
                     objective=keras_tuner.Objective('score', 'min'),
                     max_trials=10,
@@ -336,7 +346,7 @@ class model():
         
         
         # Keras Tuner
-        tuner = keras_tuner.tuners.SklearnTuner(
+        tuner = MySklearnTuner(
                 oracle=keras_tuner.oracles.BayesianOptimizationOracle(
                     objective=keras_tuner.Objective('score', 'min'),
                     max_trials=10,
@@ -549,8 +559,6 @@ class MODELING_ANN():
         # ANN Build
         input_shape = self.train_x_array.shape[1] # input shape 설정
         
-#         shutil.rmtree(os.path.join('C:\\Users\\begas\\Desktop','hp_temp_folder'),ignore_errors=True)
-        
         if self.TuneMethod == 'BO' :
             print('='*40)
             print('Tuning Method : Bayesian Optimization'.center(40))    
@@ -577,14 +585,22 @@ class MODELING_ANN():
                                                  seed = 1234,
                                                  project_name="hp_temp_folder",
                                                  overwrite = True)
-
-        tuner.search(self.x_tr_scale, 
-                     self.train_y_array, 
-                     epochs = 10,
-                     validation_data = (self.x_vd_scale, self.valid_y_array), # validation data를 입력해 줄 수 있음 (fit 함수와 동일)
-                     verbose = 0,
-                     batch_size = 16)
-
+        TryNum = 10    
+        for i in range(TryNum):
+            try :
+                print(f'Tuner Search Try - {str(i).zfill(2)}')
+                tuner.search(self.x_tr_scale, 
+                             self.train_y_array, 
+                             epochs = 10,
+                             validation_data = (self.x_vd_scale, self.valid_y_array), # validation data를 입력해 줄 수 있음 (fit 함수와 동일)
+                             verbose = 0,
+                             batch_size = 16)
+            except :
+                # 에러 발생 시 다음 Try 시도
+                continue
+           
+            # 에러 발생 하지 않을 시 루프 종료
+            break
 
         best_hps = tuner.get_best_hyperparameters(num_trials = 1)[0]
         print(best_hps.values)
@@ -630,8 +646,8 @@ class MODELING_ANN():
 
 
     def _pred(self):
-        self.dat['train_dat']['pred'] = self.model.predict(np.vstack([self.x_tr_scale,self.x_vd_scale]))
-        self.dat['test_dat']['pred'] = self.model.predict(self.x_te_scale)
+        self.dat['train_dat']['pred'] = self.model.predict(np.vstack([self.x_tr_scale,self.x_vd_scale]), verbose = 0)
+        self.dat['test_dat']['pred'] = self.model.predict(self.x_te_scale, verbose = 0)
             
  ## ANN Model Class
 class ann_model(HyperModel):
@@ -775,13 +791,23 @@ class MODELING_LSTM():
                                                  seed = 1234,
                                                  project_name="hp_temp_folder",
                                                  overwrite = True)
-
-        tuner.search(self.x_tr_scale, 
-                     self.train_y_array, 
-                     epochs = 10,
-                     validation_data = (self.x_vd_scale, self.valid_y_array), # validation data를 입력해 줄 수 있음 (fit 함수와 동일)
-                     verbose = 0,
-                     batch_size = 16)
+        
+        TryNum = 10    
+        for i in range(TryNum):
+            try :
+                print(f'Tuner Search Try - {str(i).zfill(2)}')
+                tuner.search(self.x_tr_scale, 
+                             self.train_y_array, 
+                             epochs = 10,
+                             validation_data = (self.x_vd_scale, self.valid_y_array), # validation data를 입력해 줄 수 있음 (fit 함수와 동일)
+                             verbose = 0,
+                             batch_size = 16)
+            except :
+                # 에러 발생 시 다음 Try 시도
+                continue
+           
+            # 에러 발생 하지 않을 시 루프 종료
+            break
 
 
         best_hps = tuner.get_best_hyperparameters(num_trials = 1)[0]
@@ -828,8 +854,8 @@ class MODELING_LSTM():
 
 
     def _pred(self):
-        self.tr_pred = self.model.predict(np.vstack([self.x_tr_scale,self.x_vd_scale]))
-        self.te_pred = self.model.predict(self.x_te_scale)
+        self.tr_pred = self.model.predict(np.vstack([self.x_tr_scale,self.x_vd_scale]), verbose = 0)
+        self.te_pred = self.model.predict(self.x_te_scale, verbose = 0)
 
         self.tr_pred = np.array([self.tr_pred[s][-1] for s in range(len(self.tr_pred))])
         self.tr_pred = np.vstack([np.zeros(self.nInterval * (self.nTimeSteps - 1)).reshape(-1,1),self.tr_pred])
