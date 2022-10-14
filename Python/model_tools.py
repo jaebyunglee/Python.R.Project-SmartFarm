@@ -37,7 +37,7 @@ tf.random.set_seed(1234)
 SklearnTuner 클래스
  - 각 Trial에서 print 끄기
 '''
-class MySklearnTuner(keras_tuner.tuners.SklearnTuner):
+class CustomSklearnTuner(keras_tuner.tuners.SklearnTuner):
     def search(self, *args, **kwargs):
         self._display.verbose = False
         return super().search(*args, **kwargs) #부모 클래스의 search
@@ -151,7 +151,7 @@ class model():
             return rf_model
         
         # Keras Tuner
-        tuner = MySklearnTuner(
+        tuner = CustomSklearnTuner(
                 oracle=keras_tuner.oracles.BayesianOptimizationOracle(
                     objective=keras_tuner.Objective('score', 'min'),
                     max_trials=10,
@@ -219,7 +219,7 @@ class model():
         
         
         # Keras Tuner
-        tuner = MySklearnTuner(
+        tuner = CustomSklearnTuner(
                 oracle=keras_tuner.oracles.BayesianOptimizationOracle(
                     objective=keras_tuner.Objective('score', 'min'),
                     max_trials=10,
@@ -346,7 +346,7 @@ class model():
         
         
         # Keras Tuner
-        tuner = MySklearnTuner(
+        tuner = CustomSklearnTuner(
                 oracle=keras_tuner.oracles.BayesianOptimizationOracle(
                     objective=keras_tuner.Objective('score', 'min'),
                     max_trials=10,
