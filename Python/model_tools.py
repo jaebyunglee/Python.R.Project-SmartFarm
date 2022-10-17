@@ -14,19 +14,20 @@ import xgboost    as xgb
 import lightgbm   as lgb
 import pmdarima   as pmd
 import tensorflow as tf
+
 from sklearn.linear_model    import LinearRegression
 from sklearn.ensemble        import RandomForestRegressor
 from sklearn.model_selection import GridSearchCV, ParameterGrid, KFold, train_test_split
 
-from sklearn import datasets
-from sklearn import linear_model
-from sklearn import metrics
-from sklearn import model_selection
+from sklearn   import datasets
+from sklearn   import linear_model
+from sklearn   import metrics
+from sklearn   import model_selection
 from itertools import repeat
 
 import keras_tuner
-from keras_tuner import HyperModel, Hyperband
-
+from   keras_tuner        import HyperModel, Hyperband
+from   keras_tuner.tuners import SklearnTuner
 
 # 랜덤 시드 설정
 random.seed(1234)
@@ -37,7 +38,7 @@ tf.random.set_seed(1234)
 SklearnTuner 클래스
  - 각 Trial에서 print 끄기
 '''
-class CustomSklearnTuner(keras_tuner.tuners.SklearnTuner):
+class CustomSklearnTuner(SklearnTuner):
     def search(self, *args, **kwargs):
         self._display.verbose = False
         return super().search(*args, **kwargs) #부모 클래스의 search
