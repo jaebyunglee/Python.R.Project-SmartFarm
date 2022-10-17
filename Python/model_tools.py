@@ -67,7 +67,9 @@ class model():
         * 출력
         dict           : 모델 및 모델 관련 정보들을 가지고 있는 딕셔너리
         '''
-        print(f'Model Type is ARIMA')
+        print('='*40)
+        print('Model Type is ARIMA'.center(40))
+        print('='*40)
         
         dat = copy.deepcopy(self.data)
         
@@ -99,7 +101,9 @@ class model():
         * 출력
         dict           : 모델 및 모델 관련 정보들을 가지고 있는 딕셔너리
         '''
-        print(f'Model Type is MLR')
+        print('='*40)
+        print('Model Type is MLR'.center(40))
+        print('='*40)
         
         dat = copy.deepcopy(self.data)
         # 학습에 사용할 설명변수 명 지정
@@ -132,7 +136,9 @@ class model():
         * 출력
         dict           : 모델 및 모델 관련 정보들을 가지고 있는 딕셔너리
         '''
-        print(f'Model Type is Random Forest')
+        print('='*40)
+        print('Model Type is Random Forest'.center(40))
+        print('='*40)
         dat = copy.deepcopy(self.data)
         
         # 학습에 사용할 설명변수 명 지정
@@ -195,7 +201,9 @@ class model():
         * 출력
         dict           : 모델 및 모델 관련 정보들을 가지고 있는 딕셔너리
         '''
-        print(f'Model Type is XGBoost')
+        print('='*40)
+        print('Model Type is XGBoost'.center(40))
+        print('='*40)
         dat = copy.deepcopy(self.data)
         
         # 학습에 사용할 설명변수 명 지정
@@ -322,7 +330,9 @@ class model():
         * 출력
         dict           : 모델 및 모델 관련 정보들을 가지고 있는 딕셔너리
         '''
-        print(f'Model Type is LightGBM')
+        print('='*40)
+        print('Model Type is LightGBM'.center(40))
+        print('='*40)
         dat = copy.deepcopy(self.data)
         
         # 학습에 사용할 설명변수 명 지정
@@ -463,12 +473,14 @@ class model():
         * 출력
         dict           : 모델 및 모델 관련 정보들을 가지고 있는 딕셔너리
         '''
-        print(f'Model Type is ANN')
+        print('='*40)
+        print('Model Type is ANN'.center(40))
+        print('='*40)
         dat = copy.deepcopy(self.data)
         # 학습에 사용할 설명변수 명 지정
         xvar_name = dat['x_var']
         yvar_name = self.yvar_name
-        ann = MODELING_ANN(yvar_name = yvar_name, data = dat, TuneMethod = 'HB') # BO : Bayesian Optimization , HB : Hyper Band
+        ann = MODELING_ANN(yvar_name = yvar_name, data = dat, TuneMethod = 'BO') # BO : Bayesian Optimization , HB : Hyper Band
         self.ann_ret = ann.ret
 
     def modeling_lstm(self):
@@ -480,12 +492,14 @@ class model():
         * 출력
         dict           : 모델 및 모델 관련 정보들을 가지고 있는 딕셔너리
         '''
-        print(f'Model Type is LSTM')
+        print('='*40)
+        print('Model Type is LSTM'.center(40))
+        print('='*40)
         dat = copy.deepcopy(self.data)
         # 학습에 사용할 설명변수 명 지정
         xvar_name = dat['x_var']
         yvar_name = self.yvar_name
-        lstm = MODELING_LSTM(yvar_name = yvar_name, data = dat, TuneMethod = 'HB') # BO : Bayesian Optimization , HB : Hyper Band
+        lstm = MODELING_LSTM(yvar_name = yvar_name, data = dat, TuneMethod = 'BO') # BO : Bayesian Optimization , HB : Hyper Band
         self.lstm_ret = lstm.ret   
         
         
@@ -564,7 +578,7 @@ class MODELING_ANN():
             print('Tuning Method : Bayesian Optimization'.center(40))    
             print('='*40)
             # BasianOptimization Tunning 
-            tuner = keras_tuner.BayesianOptimization(ann_model(input_shape, nStacks = 2), 
+            tuner = keras_tuner.BayesianOptimization(ann_model(input_shape), 
                                                  objective = 'val_loss', 
                                                  max_trials=10, # 튜닝 파라미터 시도 회수
                                                  num_initial_points=2,
@@ -577,7 +591,7 @@ class MODELING_ANN():
             print('Tuning Method : Hyper Band'.center(40))
             print('='*40)
             # HyperBand Tunning    
-            tuner = keras_tuner.Hyperband(ann_model(input_shape, nStacks = 2), 
+            tuner = keras_tuner.Hyperband(ann_model(input_shape), 
                                                  objective = 'val_loss', 
                                                  max_epochs=5, 
                                                  factor = 3,
@@ -605,6 +619,7 @@ class MODELING_ANN():
         best_hps = tuner.get_best_hyperparameters(num_trials = 1)[0]
         print(best_hps.values)
         self.model = tuner.hypermodel.build(best_hps)
+        print(self.model.summary())
 
         # Early Stopping 
         """
@@ -651,14 +666,12 @@ class MODELING_ANN():
             
  ## ANN Model Class
 class ann_model(HyperModel):
-    def __init__(self, input_shape : int, nStacks : int):
+    def __init__(self, input_shape : int):
         self.input_shape = input_shape
-        self.nStacks     = nStacks
 
     def build(self, hp):
         input_layer  = tf.keras.Input(shape = self.input_shape, name = 'input_layer')
-        
-        for x in range(self.nStacks):
+        for x in range(hp.Int('num_layers', min_value = 1, max_value = 3, step = 1)):
             if x == 0:
                 ann_layer = tf.keras.layers.Dense(hp.Int('units_{}'.format(str(x+1)), min_value = 4, max_value = 32, step = 4),
                                                   activation = 'relu', name = f'ann_layer_{str(x+1)}')(input_layer)
@@ -770,7 +783,7 @@ class MODELING_LSTM():
             print('Tuning Method : Bayesian Optimization'.center(40))    
             print('='*40)
             # BasianOptimization Tunning 
-            tuner = keras_tuner.BayesianOptimization(lstm_model(input_shape, nStacks = 2), 
+            tuner = keras_tuner.BayesianOptimization(lstm_model(input_shape), 
                                                  objective = 'val_loss', 
                                                  max_trials=10, # 튜닝 파라미터 시도 회수
                                                  num_initial_points=2,
@@ -783,7 +796,7 @@ class MODELING_LSTM():
             print('Tuning Method : Hyper Band'.center(40))
             print('='*40)
             # HyperBand Tunning    
-            tuner = keras_tuner.Hyperband(lstm_model(input_shape, nStacks = 2), 
+            tuner = keras_tuner.Hyperband(lstm_model(input_shape), 
                                                  objective = 'val_loss', 
                                                  max_epochs=5, 
                                                  factor = 3,
@@ -813,6 +826,7 @@ class MODELING_LSTM():
         best_hps = tuner.get_best_hyperparameters(num_trials = 1)[0]
         print(best_hps.values)
         self.model = tuner.hypermodel.build(best_hps)
+        print(self.model.summary())
 
         # Early Stopping 
         """
@@ -867,13 +881,12 @@ class MODELING_LSTM():
         
 ## LSTM Model Class
 class lstm_model(HyperModel):
-    def __init__(self, input_shape : tuple, nStacks : int):
+    def __init__(self, input_shape : tuple):
         self.input_shape = input_shape
-        self.nStacks = nStacks
 
     def build(self, hp):
         input_layer = tf.keras.Input(shape = self.input_shape, name = 'input_layer')
-        for x in range(self.nStacks):
+        for x in range(hp.Int('num_layers', min_value = 1, max_value = 3, step = 1)):
             if x == 0:
                 lstm_layer = tf.keras.layers.LSTM(hp.Int('units_{}'.format(str(x+1)), min_value = 4, max_value = 32, step = 4)
                                                    , return_sequences=True, name = f'lstm_layer_{str(x+1)}')(input_layer)
