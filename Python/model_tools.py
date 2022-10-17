@@ -620,7 +620,7 @@ class MODELING_ANN():
         best_hps = tuner.get_best_hyperparameters(num_trials = 1)[0]
         print(best_hps.values)
         self.model = tuner.hypermodel.build(best_hps)
-        print(self.model.summary())
+        self.model.summary()
 
         # Early Stopping 
         """
@@ -647,8 +647,7 @@ class MODELING_ANN():
         # 에폭 10까지 학습
         self.model.fit(self.x_tr_scale, self.train_y_array, epochs = 10, validation_data = (self.x_vd_scale, self.valid_y_array)
                        , batch_size = 16
-                       , verbose=0
-                       , callbacks = [self.history])
+                       , verbose=0)
 
 
         # 에폭 10부터 학습
@@ -827,7 +826,7 @@ class MODELING_LSTM():
         best_hps = tuner.get_best_hyperparameters(num_trials = 1)[0]
         print(best_hps.values)
         self.model = tuner.hypermodel.build(best_hps)
-        print(self.model.summary())
+        self.model.summary()
 
         # Early Stopping 
         """
@@ -854,8 +853,7 @@ class MODELING_LSTM():
         # 에폭 10까지 학습
         self.model.fit(self.x_tr_scale, self.train_y_array, epochs = 10, validation_data = (self.x_vd_scale, self.valid_y_array)
                        , batch_size = 16
-                       , verbose=0
-                       , callbacks = [self.history])
+                       , verbose=0)
 
 
         # 에폭 10부터 학습
