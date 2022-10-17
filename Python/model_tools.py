@@ -583,6 +583,7 @@ class MODELING_ANN():
                                                  objective = 'val_loss', 
                                                  max_trials=10, # 튜닝 파라미터 시도 회수
                                                  num_initial_points=2,
+                                                 executions_per_trial=2, # The number of models that should be built and fit for each trial.
                                                  directory='.',
                                                  seed = 1234,
                                                  project_name="hp_temp_folder",
@@ -596,6 +597,7 @@ class MODELING_ANN():
                                                  objective = 'val_loss', 
                                                  max_epochs=5, 
                                                  factor = 3,
+                                                 executions_per_trial=2, # The number of models that should be built and fit for each trial.
                                                  directory='.',
                                                  seed = 1234,
                                                  project_name="hp_temp_folder",
@@ -788,6 +790,7 @@ class MODELING_LSTM():
                                                  objective = 'val_loss', 
                                                  max_trials=10, # 튜닝 파라미터 시도 회수
                                                  num_initial_points=2,
+                                                 executions_per_trial=2, # The number of models that should be built and fit for each trial.
                                                  directory='.',
                                                  seed = 1234,
                                                  project_name="hp_temp_folder",
@@ -801,6 +804,7 @@ class MODELING_LSTM():
                                                  objective = 'val_loss', 
                                                  max_epochs=5, 
                                                  factor = 3,
+                                                 executions_per_trial=2, # The number of models that should be built and fit for each trial.
                                                  directory='.',
                                                  seed = 1234,
                                                  project_name="hp_temp_folder",
