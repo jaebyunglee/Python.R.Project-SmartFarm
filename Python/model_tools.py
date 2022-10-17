@@ -682,7 +682,8 @@ class ann_model(HyperModel):
         model = tf.keras.Model(inputs = input_layer, outputs = output_layer)
         
         # compile 
-        model.compile(optimizer = 'Adam', loss = 'mse')  
+        learning_rate = hp.Float("lr", min_value=1e-4, max_value=1e-2, sampling="log")
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate), loss = 'mse')
         return model
         
 
@@ -896,7 +897,8 @@ class lstm_model(HyperModel):
         model = tf.keras.Model(inputs = input_layer, outputs = output_layer)
         
         # compile 
-        model.compile(optimizer = 'Adam', loss = 'mse')  
+        learning_rate = hp.Float("lr", min_value=1e-4, max_value=1e-2, sampling="log")
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate), loss = 'mse')  
         return model
     
     
