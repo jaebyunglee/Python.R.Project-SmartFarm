@@ -1063,7 +1063,7 @@ class cnn_model(HyperModel):
         dense = tf.keras.layers.Dense(512, activation = 'relu', kernel_initializer = initializer, name = 'dense1')(dense)
         dense = tf.keras.layers.Dropout(0.5, name = "dense_drop2")(dense)
         output_layer = tf.keras.layers.Dense(5, activation = 'softmax', kernel_initializer = initializer
-                                             , kernel_regularizer=tf.keras.regularizers.l2(l2 = hp.Float("l2", min_value=1e-2, max_value=1e-1), sampling="log")
+                                             , kernel_regularizer=tf.keras.regularizers.l2(l2 = hp.Float("l2", min_value=1e-2, max_value=1e-1, sampling="log"))
                                              , name = 'dense2')(dense)                                     
         # Cnn Model
         cnn_model = tf.keras.Model(inputs = input_layer, outputs = output_layer)                      
