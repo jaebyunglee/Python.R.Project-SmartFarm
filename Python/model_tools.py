@@ -922,8 +922,9 @@ class MODELING_CNN():
         self.train_y = train_y
         self.valid_x = valid_x
         self.valid_y = valid_y
-        self.TuneMethod = TuneMethod
-        self.input_shape = train_x.shape[1:]
+        self.TuneMethod   = TuneMethod
+        self.input_shape  = train_x.shape[1:]
+        self.output_shape = train_y.shape[-1]
         self._fit()
         
     def _fit(self):
@@ -932,7 +933,7 @@ class MODELING_CNN():
             print('Tuning Method : Bayesian Optimization'.center(40))    
             print('='*40)
             # BasianOptimization Tunning 
-            tuner = keras_tuner.BayesianOptimization(cnn_model(self.input_shape), 
+            tuner = keras_tuner.BayesianOptimization(cnn_model(self.input_shape,self.output_shape), 
                                                  objective = 'val_loss', 
                                                  max_trials=10, # 튜닝 파라미터 시도 회수
                                                  num_initial_points=2,
@@ -946,7 +947,7 @@ class MODELING_CNN():
             print('Tuning Method : Hyper Band'.center(40))
             print('='*40)
             # HyperBand Tunning    
-            tuner = keras_tuner.Hyperband(cnn_model(self.input_shape), 
+            tuner = keras_tuner.Hyperband(cnn_model(self.input_shape,self.output_shape), 
                                                  objective = 'val_loss', 
                                                  max_epochs=5, 
                                                  factor = 3,
@@ -1022,9 +1023,10 @@ class MODELING_CNN():
         
 ## Cnn Model Class
 class cnn_model(HyperModel):
-    def __init__(self, input_shape : tuple):
+    def __init__(self, input_shape : tuple, output_shape : tuple):
         self.input_shape = input_shape
-
+        self.output_shape = output_shape
+        
     def build(self, hp):
         sInit = hp.Choice("initializer", ["random_normal","glorot_normal","he_normal","orthogonal"])
         
@@ -1059,10 +1061,10 @@ class cnn_model(HyperModel):
                 cnn_layer = tf.keras.layers.MaxPool2D(pool_size=(3, 3), name = f'conv{str(x+1)}_pool')(cnn_layer)       
 
         faltten = tf.keras.layers.Flatten()(cnn_layer)
-        dense = tf.keras.layers.Dropout(0.25, name = "dense_drop1")(faltten)
-        dense = tf.keras.layers.Dense(512, activation = 'relu', kernel_initializer = initializer, name = 'dense1')(dense)
-        dense = tf.keras.layers.Dropout(0.5, name = "dense_drop2")(dense)
-        output_layer = tf.keras.layers.Dense(5, activation = 'softmax', kernel_initializer = initializer
+        dense = tf.keras.layers.Dropout(hp.Float("dense_drop1", min_value=0.1, max_value=0.5, sampling="log"), name = "dense_drop1")(faltten)
+        dense = tf.keras.layers.Dense(hp.Int('dens1e_units', min_value = 32 , max_value = 512, step = 32), activation = 'relu', kernel_initializer = initializer, name = 'dense1')(dense)
+        dense = tf.keras.layers.Dropout(hp.Float("dense_drop2", min_value=0.1, max_value=0.5, sampling="log"), name = "dense_drop2")(dense)
+        output_layer = tf.keras.layers.Dense(self.output_shape, activation = 'softmax', kernel_initializer = initializer
                                              , kernel_regularizer=tf.keras.regularizers.l2(l2 = hp.Float("l2", min_value=1e-2, max_value=1e-1, sampling="log"))
                                              , name = 'dense2')(dense)                                     
         # Cnn Model
