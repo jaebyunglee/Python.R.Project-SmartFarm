@@ -1044,7 +1044,7 @@ class cnn_model(HyperModel):
         input_layer  = tf.keras.Input(shape = self.input_shape, name = 'input_layer')
         for x in range(hp.Int('num_layers', min_value = 1, max_value = 3, step = 1)):
             if x == 0:
-                cnn_layer = tf.keras.layers.Conv2D(hp.Int('units_{}'.format(str(x+1)), min_value = 4, max_value = 32, step = 4)
+                cnn_layer = tf.keras.layers.Conv2D(hp.Int('units_{}'.format(str(x+1)), min_value = 32, max_value = 512, step = 32)
                                                    , kernel_size = 3, padding = 'same', strides = 1, name = f'cnn_layer_{str(x+1)}', kernel_initializer = initializer)(input_layer)
                 cnn_layer = tf.keras.layers.BatchNormalization( name = f'conv{str(x+1)}_nor')(cnn_layer)
                 cnn_layer = tf.keras.layers.Activation('relu', name = f'conv{str(x+1)}_act')(cnn_layer)
@@ -1052,7 +1052,7 @@ class cnn_model(HyperModel):
                     cnn_layer = tf.keras.layers.Dropout(0.25, name = f'conv{str(x+1)}_drop')(cnn_layer)
                 cnn_layer = tf.keras.layers.MaxPool2D(pool_size=(3, 3), name = f'conv{str(x+1)}_pool')(cnn_layer)
             else :
-                cnn_layer = tf.keras.layers.Conv2D(hp.Int('units_{}'.format(str(x+1)), min_value = 4, max_value = 32, step = 4)
+                cnn_layer = tf.keras.layers.Conv2D(hp.Int('units_{}'.format(str(x+1)), min_value = 32, max_value = 512, step = 32)
                                                    , kernel_size = 3, padding = 'same', strides = 1, name = f'cnn_layer_{str(x+1)}', kernel_initializer = initializer)(cnn_layer)
                 cnn_layer = tf.keras.layers.BatchNormalization( name = f'conv{str(x+1)}_nor')(cnn_layer)
                 cnn_layer = tf.keras.layers.Activation('relu', name = f'conv{str(x+1)}_act')(cnn_layer)
