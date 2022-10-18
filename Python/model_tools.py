@@ -660,6 +660,10 @@ class MODELING_ANN():
                       , batch_size = 16
                       , callbacks = [self.EarlyStopping, self.reduce_lr, self.history]
                       , verbose=0)
+        
+        self.train_loss = self.model.history.history['loss']
+        self.valid_loss = self.model.history.history['val_loss']
+        self.epochs = self.model.history.epoch
 
 
     def _pred(self):
@@ -869,7 +873,10 @@ class MODELING_LSTM():
                       , batch_size = 16
                       , callbacks = [self.EarlyStopping, self.reduce_lr, self.history]
                       , verbose=0)
-
+        
+        self.train_loss = self.model.history.history['loss']
+        self.valid_loss = self.model.history.history['val_loss']
+        self.epochs = self.model.history.epoch
 
     def _pred(self):
         self.tr_pred = self.model.predict(np.vstack([self.x_tr_scale,self.x_vd_scale]), verbose = 0)
@@ -906,120 +913,162 @@ class lstm_model(HyperModel):
         return model
     
     
-# '''
-# LSTM Model Class
-# '''
-# class MODELING_LSTM():
-#     def __init__(self, yvar_name : str, data : dict) -> dict :
-#         self.yvar_name = yvar_name
-#         self.dat       = copy.deepcopy(data)
-#         self.xvar_name = self.dat['x_var']
-#         self._preprocess()
-#         self._fit()
-#         self._pred()
-#         self.ret = dict({'model' : self.lstm.model,'model_name' : 'LSTM' , "yvar" : self.yvar_name, "xvar" : self.xvar_name, 
-#                          "train_res" : self.dat['train_dat'], "test_res" : self.dat['test_dat'], "scale_info" : self.scale_info, 
-#                          "nTimeSteps" : self.nTimeSteps, "nInterval" : self.nInterval})
+'''
+CNN Model Class
+'''
+class MODELING_CNN():
+    def __init__(self, train_x, train_y, valid_x, valid_y, TuneMethod) -> dict :
+        self.train_x = train_x
+        self.train_y = train_y
+        self.valid_x = valid_x
+        self.valid_y = valid_y
+        self.TuneMethod = TuneMethod
+        self.input_shape = train_x.shape[1:]
+        self._fit()
         
+    def _fit(self):
+        if self.TuneMethod == 'BO' :
+            print('='*40)
+            print('Tuning Method : Bayesian Optimization'.center(40))    
+            print('='*40)
+            # BasianOptimization Tunning 
+            tuner = keras_tuner.BayesianOptimization(cnn_model(self.input_shape), 
+                                                 objective = 'val_loss', 
+                                                 max_trials=10, # 튜닝 파라미터 시도 회수
+                                                 num_initial_points=2,
+                                                 executions_per_trial=1, # The number of models that should be built and fit for each trial.
+                                                 directory='.',
+                                                 seed = 1234,
+                                                 project_name="hp_temp_folder",
+                                                 overwrite = True)
+        if self.TuneMethod == 'HB' :
+            print('='*40)
+            print('Tuning Method : Hyper Band'.center(40))
+            print('='*40)
+            # HyperBand Tunning    
+            tuner = keras_tuner.Hyperband(cnn_model(self.input_shape), 
+                                                 objective = 'val_loss', 
+                                                 max_epochs=5, 
+                                                 factor = 3,
+                                                 executions_per_trial=1, # The number of models that should be built and fit for each trial.
+                                                 directory='.',
+                                                 seed = 1234,
+                                                 project_name="hp_temp_folder",
+                                                 overwrite = True)
         
-#     def _preprocess(self):
-#         # 전체 데이터 생성(시계열 설명변수 생성을 위해)
-#         self.full_dat = pd.concat([self.dat['train_dat'],self.dat['test_dat']], ignore_index=True)
-
-#         # LSTM 전처리 데이터 생성
-#         self.nTimeSteps = 5
-#         self.nInterval  = 1
-
-#         # 디멘전 배치 사이즈
-#         self.dim_batch = self.full_dat.shape[0] - (self.nInterval * (self.nTimeSteps - 1))
-
-#         # 데이터 인덱스 생성
-#         idx_list = []
-#         for i in range(self.dim_batch):
-#             idx_list.append(np.arange(start = i, stop = self.nInterval * (self.nTimeSteps - 1) + i + 1, step = self.nInterval))
-
-#         # LSTM 시계열 데이터 생성    
-#         x_array = []
-#         y_array = []
-#         date_df = []
-#         for idx in range(len(idx_list)):
-#             x_array.append(np.array(self.full_dat[self.xvar_name].iloc[idx_list[idx]]))
-#             y_array.append(np.array(self.full_dat[self.yvar_name].iloc[idx_list[idx]]))
-#             date_df.append(self.full_dat['predict_time'].iloc[idx_list[idx]].max())
-
-#         self.x_array = np.array(x_array)
-#         self.y_array = np.array(y_array)
-#         self.date_df = np.array(date_df)    
-
-#         # 학습, 검증 데이터로 다시 나누기
-#         self.test_start_date = self.dat['test_dat']['predict_time'].iloc[0]
-
-#         self.train_x_array = self.x_array[self.date_df<self.test_start_date,:,:]
-#         self.train_y_array = self.y_array[self.date_df<self.test_start_date,:]
-
-#         self.test_x_array = self.x_array[self.date_df>=self.test_start_date,:,:]
-#         self.test_y_array = self.y_array[self.date_df>=self.test_start_date,:]
-
-#         # Min, Max Scaling
-#         self.scale_info = pd.DataFrame({'xvar_name' : self.xvar_name, 
-#                                         'min' : np.apply_along_axis(min, 0, np.vstack(self.train_x_array)), 
-#                                         'max' : np.apply_along_axis(max, 0, np.vstack(self.train_x_array))})
-
-#         def _scaliling(xx):
-#             return (xx - self.scale_info['min'])/(self.scale_info['max'] - self.scale_info['min'] + 1e-10)
-#         # Min, Max Scaling
-#         self.x_tr_scale = np.apply_along_axis(_scaliling, 2, self.train_x_array)
-#         self.x_te_scale = np.apply_along_axis(_scaliling, 2, self.test_x_array)
-#         self.x_te_scale[self.x_te_scale<0] = 0
-#         self.x_te_scale[self.x_te_scale>1] = 1
-
+        TryNum = 10    
+        for i in range(TryNum):
+            try :
+                print(f'Tuner Search Try - {str(i).zfill(2)}')
+                tuner.search(self.train_x, 
+                             self.train_y, 
+                             epochs = 10,
+                             validation_data = (self.valid_x, self.valid_y), # validation data를 입력해 줄 수 있음 (fit 함수와 동일)
+                             verbose = 1,
+                             batch_size = 16)
+            except :
+                # 에러 발생 시 다음 Try 시도
+                continue
+           
+            # 에러 발생 하지 않을 시 루프 종료
+            break
             
-#     def _fit(self):
-#         # LSTM Build
-#         self.input_shape = (self.nTimeSteps, self.train_x_array.shape[2]) # input shape 설정
-#         self.h_units     = [16]                  # 모델 Hidden Units 설정
-#         self.lstm = lstm_model(self.input_shape,self.h_units) # 모델 Build
-
-#         # Early Stopping, Reduce Learning Rate, HIstory
-#         EarlyStopping = tf.keras.callbacks.EarlyStopping(monitor = 'val_loss', mode = 'min', patience = 5, restore_best_weights=True, verbose = 0) 
-#         reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor = 'val_loss', mode = 'min', factor=0.5, patience=5, verbose=0, min_lr=1e-5)
-#         history = tf.keras.callbacks.History()
-
-#         self.lstm.model.fit(self.x_tr_scale, self.train_y_array, validation_split = 0.3
-#                                                , epochs = 100
-#                                                , batch_size = 16
-#                                                , callbacks = [EarlyStopping, reduce_lr, history]
-#                                                , verbose = 0)
+        best_hps = tuner.get_best_hyperparameters(num_trials = 1)[0]
+        print(best_hps.values)
+        self.model = tuner.hypermodel.build(best_hps)
+        self.model.summary()
         
+        # Early Stopping 
+        """
+        - restore_best_weights -
+        Whether to restore model weights from the epoch with the best value of the monitored quantity.
+        If False, the model weights obtained at the last step of training are used
+        """
+        self.EarlyStopping = tf.keras.callbacks.EarlyStopping(monitor = 'val_loss', mode = 'min', patience = 10,
+                                                         restore_best_weights=True, verbose = 1) 
 
-#     def _pred(self):
-#         self.tr_pred = self.lstm.model.predict(self.x_tr_scale)
-#         self.te_pred = self.lstm.model.predict(self.x_te_scale)
+        # reduce_lr
+        self.reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=0, mode='min', min_lr=1e-5)
 
-#         self.tr_pred = np.array([self.tr_pred[s][-1] for s in range(len(self.tr_pred))])
-#         self.tr_pred = np.vstack([np.zeros(self.nInterval * (self.nTimeSteps - 1)).reshape(-1,1),self.tr_pred])
-#         self.te_pred = np.array([self.te_pred[s][-1] for s in range(len(self.te_pred))])
-#         self.dat['train_dat']['pred'] = self.tr_pred
-#         self.dat['test_dat']['pred']  = self.te_pred 
+
+        # # 모델 Check Point 저장
+        # ModelCheck = tf.keras.callbacks.ModelCheckpoint(filepath = 'D:/workspace/OUT/best_model_gru/best_model_gru_{}.h5'.format(self.model_num)
+        #                                                 , monitor = 'val_loss'
+        #                                                 , mode = 'min'
+        #                                                 , save_best_only = True)
+
+        # History
+        self.history = tf.keras.callbacks.History()
         
-# ## LSTM Model Class
-# class lstm_model():
-#     def __init__(self, input_shape : tuple, h_units : list):
-#         self.input_shape = input_shape
-#         self.h_units     = h_units
-#         self._build()
-#         self._compile()
+        
+        # 에폭 10까지 학습
+        self.model.fit(self.train_x, self.train_y, epochs = 10, validation_data = (self.train_x, self.train_y)
+                       , batch_size = 16
+                       , verbose=0)
 
-#     def _build(self):
-#         input_layer = tf.keras.Input(shape = self.input_shape, name = 'input_layer')
-#         for idx,h in enumerate(self.h_units):
-#             if idx == 0:
-#                 lstm_layer = tf.keras.layers.LSTM(h, return_sequences=True, name = f'lstm_layer_{str(idx+1)}')(input_layer)
-#             else :
-#                 lstm_layer = tf.keras.layers.LSTM(h, return_sequences=True, name = f'lstm_layer_{str(idx+1)}')(lstm_layer)
-#         output_layer = tf.keras.layers.Dense(1, activation = 'linear', kernel_initializer = tf.keras.initializers.orthogonal(seed = 1234), name = 'output_layer')(lstm_layer)  
-#         self.model = tf.keras.Model(inputs = input_layer, outputs = output_layer)
 
-#     def _compile(self):
-#         self.model.compile(optimizer = 'Adam', loss = 'mean_squared_error')        
-                
+        # 에폭 10부터 학습
+        self.model.fit(self.train_x, self.train_y
+                      , validation_data = (self.train_x, self.train_y)
+                      , initial_epoch = 10
+                      , epochs = 100
+                      , batch_size = 16
+                      , callbacks = [self.EarlyStopping, self.reduce_lr, self.history]
+                      , verbose=0)
+        
+        self.train_loss = self.model.history.history['loss']
+        self.valid_loss = self.model.history.history['val_loss']
+        self.epochs = self.model.history.epoch
+        
+## Cnn Model Class
+class cnn_model(HyperModel):
+    def __init__(self, input_shape : tuple):
+        self.input_shape = input_shape
+
+    def build(self, hp):
+        sInit = hp.Choice("initializer", ["random_normal","glorot_normal","he_normal","orthogonal"])
+        
+        # Initializer
+        if sInit == 'random_normal' :
+            initializer = tf.keras.initializers.random_normal(seed=1234)
+        if sInit == 'glorot_normal' :
+            initializer = tf.keras.initializers.glorot_normal(seed=1234)
+        if sInit == 'he_normal' :
+            initializer = tf.keras.initializers.he_normal(seed=1234)
+        if sInit == 'orthogonal' :
+            initializer = tf.keras.initializers.orthogonal(seed=1234)
+
+        # Cnn layer    
+        input_layer  = tf.keras.Input(shape = self.input_shape, name = 'input_layer')
+        for x in range(hp.Int('num_layers', min_value = 1, max_value = 3, step = 1)):
+            if x == 0:
+                cnn_layer = tf.keras.layers.Conv2D(hp.Int('units_{}'.format(str(x+1)), min_value = 4, max_value = 32, step = 4)
+                                                   , kernel_size = 3, padding = 'same', strides = 1, name = f'cnn_layer_{str(x+1)}', kernel_initializer = initializer)(input_layer)
+                cnn_layer = tf.keras.layers.BatchNormalization( name = f'conv{str(x+1)}_nor')(cnn_layer)
+                cnn_layer = tf.keras.layers.Activation('relu', name = f'conv{str(x+1)}_act')(cnn_layer)
+                if hp.Boolean('dropout_{}'.format(str(x+1))):
+                    cnn_layer = tf.keras.layers.Dropout(0.25, name = f'conv{str(x+1)}_drop')(cnn_layer)
+                cnn_layer = tf.keras.layers.MaxPool2D(pool_size=(3, 3), name = f'conv{str(x+1)}_pool')(cnn_layer)
+            else :
+                cnn_layer = tf.keras.layers.Conv2D(hp.Int('units_{}'.format(str(x+1)), min_value = 4, max_value = 32, step = 4)
+                                                   , kernel_size = 3, padding = 'same', strides = 1, name = f'cnn_layer_{str(x+1)}', kernel_initializer = initializer)(cnn_layer)
+                cnn_layer = tf.keras.layers.BatchNormalization( name = f'conv{str(x+1)}_nor')(cnn_layer)
+                cnn_layer = tf.keras.layers.Activation('relu', name = f'conv{str(x+1)}_act')(cnn_layer)
+                if hp.Boolean('dropout_{}'.format(str(x+1))):
+                    cnn_layer = tf.keras.layers.Dropout(0.25, name = f'conv{str(x+1)}_drop')(cnn_layer)
+                cnn_layer = tf.keras.layers.MaxPool2D(pool_size=(3, 3), name = f'conv{str(x+1)}_pool')(cnn_layer)       
+
+        faltten = tf.keras.layers.Flatten()(cnn_layer)
+        dense = tf.keras.layers.Dropout(0.25, name = "dense_drop1")(faltten)
+        dense = tf.keras.layers.Dense(512, activation = 'relu', kernel_initializer = initializer, name = 'dense1')(dense)
+        dense = tf.keras.layers.Dropout(0.5, name = "dense_drop2")(dense)
+        output_layer = tf.keras.layers.Dense(5, activation = 'softmax', kernel_initializer = initializer
+                                             , kernel_regularizer=tf.keras.regularizers.l2(l2 = hp.Float("l2", min_value=1e-2, max_value=1e-1), sampling="log")
+                                             , name = 'dense2')(dense)                                     
+        # Cnn Model
+        cnn_model = tf.keras.Model(inputs = input_layer, outputs = output_layer)                      
+
+        # Model Compile 
+        learning_rate = hp.Float("lr", min_value=1e-4, max_value=1e-2, sampling="log")
+        cnn_model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate), loss = 'categorical_crossentropy', metrics = 'acc')
+        return cnn_model
