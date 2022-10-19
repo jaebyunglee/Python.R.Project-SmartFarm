@@ -307,7 +307,7 @@ class model():
 #                             'min_child_weight': float(best_params['min_child_weight']),
 #                             'colsample_bytree': float(best_params['colsample_bytree'])}
 #         num_boost_round = int(best_params['num_boost_round'])    
-#         print(f'== XGBoost Best Tunning Parameters ==')
+#         print(f'== XGBoost Best Tuning Parameters ==')
 #         print(f'num_boost_round : {num_boost_round}')
 #         print(xgb_train_params)
         
@@ -450,7 +450,7 @@ class model():
 #                             'bagging_fraction' : float(best_params['bagging_fraction']),
 #                             'max_bin'          : int(best_params['max_bin'])}
 #         num_boost_round = int(best_params['num_boost_round'])    
-#         print(f'== LightGBM Best Tunning Parameters ==')
+#         print(f'== LightGBM Best Tuning Parameters ==')
 #         print(f'num_boost_round : {num_boost_round}')
 #         print(lgb_train_params)
         
@@ -578,7 +578,7 @@ class MODELING_ANN():
             print('='*40)
             print('Tuning Method : Bayesian Optimization'.center(40))    
             print('='*40)
-            # BasianOptimization Tunning 
+            # BasianOptimization Tuning 
             tuner = keras_tuner.BayesianOptimization(ann_model(input_shape), 
                                                  objective = 'val_loss', 
                                                  max_trials=10, # 튜닝 파라미터 시도 회수
@@ -592,7 +592,7 @@ class MODELING_ANN():
             print('='*40)
             print('Tuning Method : Hyper Band'.center(40))
             print('='*40)
-            # HyperBand Tunning    
+            # HyperBand Tuning    
             tuner = keras_tuner.Hyperband(ann_model(input_shape), 
                                                  objective = 'val_loss', 
                                                  max_epochs=5, 
@@ -789,7 +789,7 @@ class MODELING_LSTM():
             print('='*40)
             print('Tuning Method : Bayesian Optimization'.center(40))    
             print('='*40)
-            # BasianOptimization Tunning 
+            # BasianOptimization Tuning 
             tuner = keras_tuner.BayesianOptimization(lstm_model(input_shape), 
                                                  objective = 'val_loss', 
                                                  max_trials=10, # 튜닝 파라미터 시도 회수
@@ -803,7 +803,7 @@ class MODELING_LSTM():
             print('='*40)
             print('Tuning Method : Hyper Band'.center(40))
             print('='*40)
-            # HyperBand Tunning    
+            # HyperBand Tuning    
             tuner = keras_tuner.Hyperband(lstm_model(input_shape), 
                                                  objective = 'val_loss', 
                                                  max_epochs=5, 
@@ -932,7 +932,7 @@ class MODELING_CNN():
             print('='*40)
             print('Tuning Method : Bayesian Optimization'.center(40))    
             print('='*40)
-            # BasianOptimization Tunning 
+            # BasianOptimization Tuning 
             tuner = keras_tuner.BayesianOptimization(cnn_model(self.input_shape,self.output_shape), 
                                                  objective = 'val_loss', 
                                                  max_trials=5, # 튜닝 파라미터 시도 회수
@@ -946,7 +946,7 @@ class MODELING_CNN():
             print('='*40)
             print('Tuning Method : Hyper Band'.center(40))
             print('='*40)
-            # HyperBand Tunning    
+            # HyperBand Tuning    
             tuner = keras_tuner.Hyperband(cnn_model(self.input_shape,self.output_shape), 
                                                  objective = 'val_loss', 
                                                  max_epochs=5, 
