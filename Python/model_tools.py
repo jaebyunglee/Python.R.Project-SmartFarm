@@ -966,7 +966,7 @@ class MODELING_CNN():
                              epochs = 10,
                              validation_data = (self.valid_x, self.valid_y), # validation data를 입력해 줄 수 있음 (fit 함수와 동일)
                              verbose = 1,
-                             batch_size = 16)
+                             batch_size = 32)
             except :
                 # 에러 발생 시 다음 Try 시도
                 continue
@@ -1004,7 +1004,7 @@ class MODELING_CNN():
         
         # 에폭 10까지 학습
         self.model.fit(self.train_x, self.train_y, epochs = 10, validation_data = (self.train_x, self.train_y)
-                       , batch_size = 16
+                       , batch_size = 32
                        , verbose=1)
 
 
@@ -1013,7 +1013,7 @@ class MODELING_CNN():
                       , validation_data = (self.train_x, self.train_y)
                       , initial_epoch = 10
                       , epochs = 100
-                      , batch_size = 16
+                      , batch_size = 32
                       , callbacks = [self.EarlyStopping, self.reduce_lr, self.history]
                       , verbose=1)
         
