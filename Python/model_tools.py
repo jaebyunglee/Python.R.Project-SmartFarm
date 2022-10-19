@@ -1052,7 +1052,7 @@ class cnn_model(HyperModel):
                 cnn_layer = tf.keras.layers.BatchNormalization( name = f'conv{str(x+1)}_nor')(cnn_layer)
                 cnn_layer = tf.keras.layers.Activation('relu', name = f'conv{str(x+1)}_act')(cnn_layer)
                 if hp.Boolean('dropout_{}'.format(str(x+1))):
-                    cnn_layer = tf.keras.layers.Dropout(0.25, name = f'conv{str(x+1)}_drop')(cnn_layer)
+                    cnn_layer = tf.keras.layers.Dropout(hp.Float(f'conv{str(x+1)}_drop', min_value=0, max_value=0.5, step=0.1, default=0.5), name = f'conv{str(x+1)}_drop')(cnn_layer)
                 cnn_layer = tf.keras.layers.MaxPool2D(pool_size=(3, 3), name = f'conv{str(x+1)}_pool')(cnn_layer)
             else :
                 cnn_layer = tf.keras.layers.Conv2D(hp.Choice('units_{}'.format(str(x+1)), [16,32,128,256])
@@ -1060,7 +1060,7 @@ class cnn_model(HyperModel):
                 cnn_layer = tf.keras.layers.BatchNormalization( name = f'conv{str(x+1)}_nor')(cnn_layer)
                 cnn_layer = tf.keras.layers.Activation('relu', name = f'conv{str(x+1)}_act')(cnn_layer)
                 if hp.Boolean('dropout_{}'.format(str(x+1))):
-                    cnn_layer = tf.keras.layers.Dropout(0.25, name = f'conv{str(x+1)}_drop')(cnn_layer)
+                    cnn_layer = tf.keras.layers.Dropout(hp.Float(f'conv{str(x+1)}_drop', min_value=0, max_value=0.5, step=0.1, default=0.5), name = f'conv{str(x+1)}_drop')(cnn_layer)
                 cnn_layer = tf.keras.layers.MaxPool2D(pool_size=(3, 3), name = f'conv{str(x+1)}_pool')(cnn_layer)       
 
         faltten = tf.keras.layers.Flatten()(cnn_layer)
