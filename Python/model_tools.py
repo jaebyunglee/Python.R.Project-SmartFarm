@@ -937,8 +937,8 @@ class MODELING_CNN():
             # BasianOptimization Tuning 
             tuner = keras_tuner.BayesianOptimization(cnn_model(self.input_shape,self.output_shape), 
                                                  objective = 'val_loss', 
-                                                 max_trials=5, # 튜닝 파라미터 시도 회수
-                                                 num_initial_points=2,
+                                                 max_trials=10, # 튜닝 파라미터 시도 회수
+                                                 num_initial_points=None,
                                                  executions_per_trial=1, # The number of models that should be built and fit for each trial.
                                                  directory='.',
                                                  seed = 1234,
@@ -951,7 +951,7 @@ class MODELING_CNN():
             # HyperBand Tuning    
             tuner = keras_tuner.Hyperband(cnn_model(self.input_shape,self.output_shape), 
                                                  objective = 'val_loss', 
-                                                 max_epochs=5, 
+                                                 max_epochs=10, 
                                                  factor = 3,
                                                  executions_per_trial=1, # The number of models that should be built and fit for each trial.
                                                  directory='.',
