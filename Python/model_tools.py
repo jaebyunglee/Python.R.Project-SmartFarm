@@ -1062,7 +1062,7 @@ class cnn_model(HyperModel):
 
         faltten = tf.keras.layers.Flatten()(cnn_layer)
         dense = tf.keras.layers.Dropout(hp.Float("dense_drop1", min_value=0.1, max_value=0.5, sampling="log"), name = "dense_drop1")(faltten)
-        dense = tf.keras.layers.Dense(hp.Int('dens1e_units', min_value = 32 , max_value = 512, step = 32), activation = 'relu', kernel_initializer = initializer, name = 'dense1')(dense)
+        dense = tf.keras.layers.Dense(hp.Int('dense1_units', min_value = 32 , max_value = 512, step = 32), activation = 'relu', kernel_initializer = initializer, name = 'dense1')(dense)
         dense = tf.keras.layers.Dropout(hp.Float("dense_drop2", min_value=0.1, max_value=0.5, sampling="log"), name = "dense_drop2")(dense)
         output_layer = tf.keras.layers.Dense(self.output_shape, activation = 'softmax', kernel_initializer = initializer
                                              , kernel_regularizer=tf.keras.regularizers.l2(l2 = hp.Float("l2", min_value=1e-2, max_value=1e-1, sampling="log"))
