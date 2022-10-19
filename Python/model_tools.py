@@ -670,7 +670,7 @@ class MODELING_ANN():
         self.dat['train_dat']['pred'] = self.model.predict(np.vstack([self.x_tr_scale,self.x_vd_scale]), verbose = 0)
         self.dat['test_dat']['pred'] = self.model.predict(self.x_te_scale, verbose = 0)
             
- ## ANN Model Class
+## ANN Model Class
 class ann_model(HyperModel):
     def __init__(self, input_shape : int):
         self.input_shape = input_shape
