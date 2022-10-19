@@ -634,7 +634,7 @@ class MODELING_ANN():
                                                          restore_best_weights=True, verbose = 1) 
 
         # reduce_lr
-        self.reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=0, mode='min', min_lr=1e-5)
+        self.reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=5, verbose=0, mode='min', min_lr=1e-5)
 
 
         # # 모델 Check Point 저장
@@ -848,7 +848,7 @@ class MODELING_LSTM():
                                                          restore_best_weights=True, verbose = 1) 
 
         # reduce_lr
-        self.reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=0, mode='min', min_lr=1e-5)
+        self.reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=5, verbose=0, mode='min', min_lr=1e-5)
 
 
         # # 모델 Check Point 저장
@@ -991,7 +991,7 @@ class MODELING_CNN():
                                                          restore_best_weights=True, verbose = 1) 
 
         # reduce_lr
-        self.reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=0, mode='min', min_lr=1e-5)
+        self.reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=5, verbose=0, mode='min', min_lr=1e-5)
 
 
         # # 모델 Check Point 저장
