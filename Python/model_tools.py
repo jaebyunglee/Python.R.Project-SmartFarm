@@ -649,6 +649,7 @@ class MODELING_ANN():
         # 에폭 10까지 학습
         self.model.fit(self.x_tr_scale, self.train_y_array, epochs = 10, validation_data = (self.x_vd_scale, self.valid_y_array)
                        , batch_size = 16
+                       , callbacks = [self.history]
                        , verbose=0)
 
 
@@ -862,6 +863,7 @@ class MODELING_LSTM():
         # 에폭 10까지 학습
         self.model.fit(self.x_tr_scale, self.train_y_array, epochs = 10, validation_data = (self.x_vd_scale, self.valid_y_array)
                        , batch_size = 16
+                       , callbacks = [self.history]
                        , verbose=0)
 
 
@@ -1005,6 +1007,7 @@ class MODELING_CNN():
         # 에폭 10까지 학습
         self.model.fit(self.train_x, self.train_y, epochs = 10, validation_data = (self.train_x, self.train_y)
                        , batch_size = 32
+                       , callbacks = [self.history]
                        , verbose=1)
 
 
