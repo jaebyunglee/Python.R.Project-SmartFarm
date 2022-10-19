@@ -509,7 +509,7 @@ class model():
 ANN Model Class
 '''
 class MODELING_ANN():
-    def __init__(self, yvar_name : str, data : dict, TuneMethod : str) -> dict :
+    def __init__(self, yvar_name : str, data : dict, TuneMethod : str) :
         
         self.yvar_name  = yvar_name
         self.dat        = copy.deepcopy(data)
@@ -699,7 +699,7 @@ class ann_model(HyperModel):
 LSTM Model Class
 '''
 class MODELING_LSTM():
-    def __init__(self, yvar_name : str, data : dict, TuneMethod : str) -> dict :
+    def __init__(self, yvar_name : str, data : dict, TuneMethod : str) :
         self.yvar_name = yvar_name
         self.dat       = copy.deepcopy(data)
         self.xvar_name = self.dat['x_var']
@@ -917,7 +917,7 @@ class lstm_model(HyperModel):
 CNN Model Class
 '''
 class MODELING_CNN():
-    def __init__(self, train_x, train_y, valid_x, valid_y, TuneMethod) -> dict :
+    def __init__(self, train_x : np.array , train_y : np.array , valid_x : np.array , valid_y : np.array , TuneMethod : str) :
         self.train_x = train_x
         self.train_y = train_y
         self.valid_x = valid_x
