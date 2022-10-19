@@ -965,7 +965,7 @@ class MODELING_CNN():
                              self.train_y, 
                              epochs = 10,
                              validation_data = (self.valid_x, self.valid_y), # validation data를 입력해 줄 수 있음 (fit 함수와 동일)
-                             verbose = 1,
+                             verbose = 0,
                              batch_size = 32)
             except :
                 # 에러 발생 시 다음 Try 시도
