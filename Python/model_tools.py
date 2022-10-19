@@ -935,7 +935,7 @@ class MODELING_CNN():
             # BasianOptimization Tunning 
             tuner = keras_tuner.BayesianOptimization(cnn_model(self.input_shape,self.output_shape), 
                                                  objective = 'val_loss', 
-                                                 max_trials=10, # 튜닝 파라미터 시도 회수
+                                                 max_trials=5, # 튜닝 파라미터 시도 회수
                                                  num_initial_points=2,
                                                  executions_per_trial=1, # The number of models that should be built and fit for each trial.
                                                  directory='.',
@@ -1005,7 +1005,7 @@ class MODELING_CNN():
         # 에폭 10까지 학습
         self.model.fit(self.train_x, self.train_y, epochs = 10, validation_data = (self.train_x, self.train_y)
                        , batch_size = 16
-                       , verbose=0)
+                       , verbose=1)
 
 
         # 에폭 10부터 학습
@@ -1015,7 +1015,7 @@ class MODELING_CNN():
                       , epochs = 100
                       , batch_size = 16
                       , callbacks = [self.EarlyStopping, self.reduce_lr, self.history]
-                      , verbose=0)
+                      , verbose=1)
         
         self.train_loss = self.model.history.history['loss']
         self.valid_loss = self.model.history.history['val_loss']
@@ -1044,7 +1044,7 @@ class cnn_model(HyperModel):
         input_layer  = tf.keras.Input(shape = self.input_shape, name = 'input_layer')
         for x in range(hp.Int('num_layers', min_value = 1, max_value = 3, step = 1)):
             if x == 0:
-                cnn_layer = tf.keras.layers.Conv2D(hp.Int('units_{}'.format(str(x+1)), min_value = 32, max_value = 512, step = 32)
+                cnn_layer = tf.keras.layers.Conv2D(hp.Choice('units_{}'.format(str(x+1)), [16,32,128,256])
                                                    , kernel_size = 3, padding = 'same', strides = 1, name = f'cnn_layer_{str(x+1)}', kernel_initializer = initializer)(input_layer)
                 cnn_layer = tf.keras.layers.BatchNormalization( name = f'conv{str(x+1)}_nor')(cnn_layer)
                 cnn_layer = tf.keras.layers.Activation('relu', name = f'conv{str(x+1)}_act')(cnn_layer)
@@ -1052,7 +1052,7 @@ class cnn_model(HyperModel):
                     cnn_layer = tf.keras.layers.Dropout(0.25, name = f'conv{str(x+1)}_drop')(cnn_layer)
                 cnn_layer = tf.keras.layers.MaxPool2D(pool_size=(3, 3), name = f'conv{str(x+1)}_pool')(cnn_layer)
             else :
-                cnn_layer = tf.keras.layers.Conv2D(hp.Int('units_{}'.format(str(x+1)), min_value = 32, max_value = 512, step = 32)
+                cnn_layer = tf.keras.layers.Conv2D(hp.Choice('units_{}'.format(str(x+1)), [16,32,128,256])
                                                    , kernel_size = 3, padding = 'same', strides = 1, name = f'cnn_layer_{str(x+1)}', kernel_initializer = initializer)(cnn_layer)
                 cnn_layer = tf.keras.layers.BatchNormalization( name = f'conv{str(x+1)}_nor')(cnn_layer)
                 cnn_layer = tf.keras.layers.Activation('relu', name = f'conv{str(x+1)}_act')(cnn_layer)
@@ -1062,7 +1062,7 @@ class cnn_model(HyperModel):
 
         faltten = tf.keras.layers.Flatten()(cnn_layer)
         dense = tf.keras.layers.Dropout(hp.Float("dense_drop1", min_value=0.1, max_value=0.5, sampling="log"), name = "dense_drop1")(faltten)
-        dense = tf.keras.layers.Dense(hp.Int('dense1_units', min_value = 32 , max_value = 512, step = 32), activation = 'relu', kernel_initializer = initializer, name = 'dense1')(dense)
+        dense = tf.keras.layers.Dense(hp.Choice('dense1_units', [16,32,128,256]), activation = 'relu', kernel_initializer = initializer, name = 'dense1')(dense)
         dense = tf.keras.layers.Dropout(hp.Float("dense_drop2", min_value=0.1, max_value=0.5, sampling="log"), name = "dense_drop2")(dense)
         output_layer = tf.keras.layers.Dense(self.output_shape, activation = 'softmax', kernel_initializer = initializer
                                              , kernel_regularizer=tf.keras.regularizers.l2(l2 = hp.Float("l2", min_value=1e-2, max_value=1e-1, sampling="log"))
