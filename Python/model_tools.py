@@ -34,7 +34,6 @@ from   keras_tuner.tuners import SklearnTuner
 # 랜덤 시드 설정
 random.seed(1234)
 tf.random.set_seed(1234)
-math.factorial(100000)
 
 '''
 SklearnTuner 클래스
