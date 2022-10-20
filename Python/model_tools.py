@@ -1125,8 +1125,8 @@ class cnn_model(HyperModel):
                     cnn_layer = tf.keras.layers.Dropout(hp.Float(f'conv{str(x+1)}_drop', min_value=0, max_value=0.5, step=0.1, default=0.5), name = f'conv{str(x+1)}_drop')(cnn_layer)
                 cnn_layer = tf.keras.layers.MaxPool2D(pool_size=(3, 3), name = f'conv{str(x+1)}_pool')(cnn_layer)       
 
-        faltten = tf.keras.layers.Flatten()(cnn_layer)
-        dense = tf.keras.layers.Dropout(hp.Float("dense_drop1", min_value=0, max_value=0.5, step=0.1, default=0.5), name = "dense_drop1")(faltten)
+        flatten = tf.keras.layers.Flatten()(cnn_layer)
+        dense = tf.keras.layers.Dropout(hp.Float("dense_drop1", min_value=0, max_value=0.5, step=0.1, default=0.5), name = "dense_drop1")(flatten)
         dense = tf.keras.layers.Dense(hp.Choice('dense1_units', [16,32,128,256]), activation = 'relu', kernel_initializer = initializer, name = 'dense1')(dense)
         dense = tf.keras.layers.Dropout(hp.Float("dense_drop2", min_value=0, max_value=0.5, step=0.1, default=0.5), name = "dense_drop2")(dense)
         output_layer = tf.keras.layers.Dense(self.output_shape, activation = 'softmax', kernel_initializer = initializer
