@@ -2,12 +2,14 @@
 import os
 import re
 import math
+import time
 import copy
 import random
 import shutil
 import datetime
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 # 모델링 관련 패키지
 import xgboost    as xgb
@@ -32,7 +34,7 @@ from   keras_tuner.tuners import SklearnTuner
 # 랜덤 시드 설정
 random.seed(1234)
 tf.random.set_seed(1234)
-
+math.factorial(100000)
 
 '''
 SklearnTuner 클래스
@@ -71,6 +73,7 @@ class model():
         print('='*40)
         print('Model Type is ARIMA'.center(40))
         print('='*40)
+        start = time.time()
         
         dat = copy.deepcopy(self.data)
         
@@ -91,6 +94,11 @@ class model():
         dat['test_dat']['pred'] = arima_model.predict(X=arima_test_x, n_periods=arima_test_x.shape[0])
         
         self.arima_ret = dict({'model' : arima_model,'model_name' : 'ARIMA' , "yvar" : yvar_name, "xvar" : xvar_name, "train_res" : dat['train_dat'], "test_res" : dat['test_dat']})
+        
+        end = time.time()
+        result = datetime.timedelta(seconds = end - start)
+        print(f"튜닝 및 학습에 소요된 시간 : {str(result).split('.')[0]}")
+        
         return self.arima_ret
     
     def modeling_mlr(self) :
@@ -105,6 +113,7 @@ class model():
         print('='*40)
         print('Model Type is MLR'.center(40))
         print('='*40)
+        start = time.time()
         
         dat = copy.deepcopy(self.data)
         # 학습에 사용할 설명변수 명 지정
@@ -125,6 +134,10 @@ class model():
         dat['test_dat']['pred'] = mlr_model.predict(X=mlr_test_x)
         self.mlr_ret = dict({'model' : mlr_model,'model_name' : 'MLR' , "yvar" : yvar_name, "xvar" : xvar_name, "train_res" : dat['train_dat'], "test_res" : dat['test_dat']})
         
+        end = time.time()
+        result = datetime.timedelta(seconds = end - start)
+        print(f"튜닝 및 학습에 소요된 시간 : {str(result).split('.')[0]}")
+        
         return self.mlr_ret    
     
     
@@ -140,6 +153,7 @@ class model():
         print('='*40)
         print('Model Type is Random Forest'.center(40))
         print('='*40)
+        start = time.time()
         dat = copy.deepcopy(self.data)
         
         # 학습에 사용할 설명변수 명 지정
@@ -156,6 +170,7 @@ class model():
             rf_model = RandomForestRegressor(n_estimators=hp.Int('n_estimators', 10, 50, step=10),
                                              max_depth=hp.Int('max_depth', 3, 10, step = 1), random_state = 1234)
             return rf_model
+        
         
         # Keras Tuner
         tuner = CustomSklearnTuner(
@@ -176,11 +191,11 @@ class model():
         tuner.search(rf_train_x,rf_train_y)
         
         # Best Hyper Parameters
-        best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
-        print(best_hps.values)
+        self.best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
+        print(self.best_hps.values)
         
         # Final Model Build
-        rf_model = tuner.hypermodel.build(best_hps)
+        rf_model = tuner.hypermodel.build(self.best_hps)
 
         # Fit
         rf_model.fit(rf_train_x,rf_train_y)
@@ -189,6 +204,10 @@ class model():
         dat['train_dat']['pred'] = rf_model.predict(rf_train_x)
         dat['test_dat']['pred']  = rf_model.predict(rf_test_x)
         self.rf_ret = dict({'model' : rf_model,'model_name' : 'RF' , "yvar" : yvar_name, "xvar" : xvar_name, "train_res" : dat['train_dat'], "test_res" : dat['test_dat']})
+        
+        end = time.time()
+        result = datetime.timedelta(seconds = end - start)
+        print(f"튜닝 및 학습에 소요된 시간 : {str(result).split('.')[0]}")
         
         return self.rf_ret
     
@@ -205,6 +224,7 @@ class model():
         print('='*40)
         print('Model Type is XGBoost'.center(40))
         print('='*40)
+        start = time.time()
         dat = copy.deepcopy(self.data)
         
         # 학습에 사용할 설명변수 명 지정
@@ -246,11 +266,11 @@ class model():
         tuner.search(xgb_train_x,xgb_train_y)
         
         # Best Hyper Parameters
-        best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
-        print(best_hps.values)
+        self.best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
+        print(self.best_hps.values)
         
         # Final Model Build
-        xgb_model = tuner.hypermodel.build(best_hps)
+        xgb_model = tuner.hypermodel.build(self.best_hps)
         
         # Fit
         xgb_model.fit(xgb_train_x,xgb_train_y)
@@ -262,6 +282,10 @@ class model():
 
         self.xgb_ret = dict({'model' : xgb_model,'model_name' : 'XGB' , "yvar" : yvar_name, "xvar" : xvar_name, "train_res" : dat['train_dat'], "test_res" : dat['test_dat']})
 
+        end = time.time()
+        result = datetime.timedelta(seconds = end - start)
+        print(f"튜닝 및 학습에 소요된 시간 : {str(result).split('.')[0]}")
+        
         return self.xgb_ret
     
 #     def modeling_xgb(self):
@@ -334,6 +358,7 @@ class model():
         print('='*40)
         print('Model Type is LightGBM'.center(40))
         print('='*40)
+        start = time.time()
         dat = copy.deepcopy(self.data)
         
         # 학습에 사용할 설명변수 명 지정
@@ -375,11 +400,11 @@ class model():
         tuner.search(lgb_train_x,lgb_train_y)
         
         # Best Hyper Parameters
-        best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
-        print(best_hps.values)
+        self.best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
+        print(self.best_hps.values)
         
         # Final Model Build
-        lgb_model = tuner.hypermodel.build(best_hps)
+        lgb_model = tuner.hypermodel.build(self.best_hps)
         
         # Fit
         lgb_model.fit(lgb_train_x,lgb_train_y)
@@ -391,6 +416,10 @@ class model():
 
         self.lgb_ret = dict({'model' : lgb_model,'model_name' : 'LGB' , "yvar" : yvar_name, "xvar" : xvar_name, "train_res" : dat['train_dat'], "test_res" : dat['test_dat']})
 
+        end = time.time()
+        result = datetime.timedelta(seconds = end - start)
+        print(f"튜닝 및 학습에 소요된 시간 : {str(result).split('.')[0]}")
+        
         return self.lgb_ret
     
     
@@ -571,7 +600,8 @@ class MODELING_ANN():
 #                                                , verbose = 0)
 
     def _fit(self):
-        # ANN Build
+
+        start = time.time()
         input_shape = self.train_x_array.shape[1] # input shape 설정
         
         if self.TuneMethod == 'BO' :
@@ -619,9 +649,9 @@ class MODELING_ANN():
             # 에러 발생 하지 않을 시 루프 종료
             break
 
-        best_hps = tuner.get_best_hyperparameters(num_trials = 1)[0]
-        print(best_hps.values)
-        self.model = tuner.hypermodel.build(best_hps)
+        self.best_hps = tuner.get_best_hyperparameters(num_trials = 1)[0]
+        print(self.best_hps.values)
+        self.model = tuner.hypermodel.build(self.best_hps)
         self.model.summary()
 
         # Early Stopping 
@@ -665,7 +695,10 @@ class MODELING_ANN():
         self.train_loss = self.model.history.history['loss']
         self.valid_loss = self.model.history.history['val_loss']
         self.epochs = self.model.history.epoch
-
+        
+        end = time.time()
+        result = datetime.timedelta(seconds = end - start)
+        print(f"튜닝 및 학습에 소요된 시간 : {str(result).split('.')[0]}")
 
     def _pred(self):
         self.dat['train_dat']['pred'] = self.model.predict(np.vstack([self.x_tr_scale,self.x_vd_scale]), verbose = 0)
@@ -783,6 +816,8 @@ class MODELING_LSTM():
             
     def _fit(self):
          
+        start = time.time()
+            
         # LSTM Build
         input_shape = (self.nTimeSteps, self.train_x_array.shape[2]) # input shape 설정
         
@@ -833,9 +868,9 @@ class MODELING_LSTM():
             break
 
 
-        best_hps = tuner.get_best_hyperparameters(num_trials = 1)[0]
-        print(best_hps.values)
-        self.model = tuner.hypermodel.build(best_hps)
+        self.best_hps = tuner.get_best_hyperparameters(num_trials = 1)[0]
+        print(self.best_hps.values)
+        self.model = tuner.hypermodel.build(self.best_hps)
         self.model.summary()
 
         # Early Stopping 
@@ -879,6 +914,10 @@ class MODELING_LSTM():
         self.train_loss = self.model.history.history['loss']
         self.valid_loss = self.model.history.history['val_loss']
         self.epochs = self.model.history.epoch
+        
+        end = time.time()
+        result = datetime.timedelta(seconds = end - start)
+        print(f"튜닝 및 학습에 소요된 시간 : {str(result).split('.')[0]}")
 
     def _pred(self):
         self.tr_pred = self.model.predict(np.vstack([self.x_tr_scale,self.x_vd_scale]), verbose = 0)
@@ -930,6 +969,8 @@ class MODELING_CNN():
         self._fit()
         
     def _fit(self):
+        start = time.time()
+        
         if self.TuneMethod == 'BO' :
             print('='*40)
             print('Tuning Method : Bayesian Optimization'.center(40))    
@@ -976,9 +1017,9 @@ class MODELING_CNN():
             # 에러 발생 하지 않을 시 루프 종료
             break
             
-        best_hps = tuner.get_best_hyperparameters(num_trials = 1)[0]
-        print(best_hps.values)
-        self.model = tuner.hypermodel.build(best_hps)
+        self.best_hps = tuner.get_best_hyperparameters(num_trials = 1)[0]
+        print(self.best_hps.values)
+        self.model = tuner.hypermodel.build(self.best_hps)
         self.model.summary()
         
         # Early Stopping 
@@ -1005,7 +1046,7 @@ class MODELING_CNN():
         
         
         # 에폭 10까지 학습
-        self.model.fit(self.train_x, self.train_y, epochs = 10, validation_data = (self.train_x, self.train_y)
+        self.model.fit(self.train_x, self.train_y, epochs = 10, validation_data = (self.valid_x, self.valid_y)
                        , batch_size = 32
                        , callbacks = [self.history]
                        , verbose=1)
@@ -1013,7 +1054,7 @@ class MODELING_CNN():
 
         # 에폭 10부터 학습
         self.model.fit(self.train_x, self.train_y
-                      , validation_data = (self.train_x, self.train_y)
+                      , validation_data = (self.valid_x, self.valid_y)
                       , initial_epoch = 10
                       , epochs = 100
                       , batch_size = 32
@@ -1023,6 +1064,27 @@ class MODELING_CNN():
         self.train_loss = self.model.history.history['loss']
         self.valid_loss = self.model.history.history['val_loss']
         self.epochs = self.model.history.epoch
+        
+        end = time.time()
+        result = datetime.timedelta(seconds = end - start)
+        print(f"튜닝 및 학습에 소요된 시간 : {str(result).split('.')[0]}")
+        
+        # Loss Graph
+        fig, ax = plt.subplots(1,2,figsize = (15,8))
+        x_epoch = list(range(1, len(self.history.history['loss']) + 1))
+        b_epoch = np.argmin(self.history.history['val_loss']) + 1
+        
+        ax[0].plot(x_epoch, self.history.history['loss'], label = 'loss')
+        ax[0].plot(x_epoch, self.history.history['val_loss'], label = 'val_loss')
+        ax[0].legend()    
+
+        ax[1].plot(x_epoch, self.history.history['acc'], label = 'acc')
+        ax[1].plot(x_epoch, self.history.history['val_acc'], label = 'val_acc')
+        ax[1].legend()   
+     
+        fig.suptitle(f'Best Epoch : {b_epoch}', fontsize = 15, y = 1.05)
+        fig.tight_layout()
+        plt.show()
         
 ## Cnn Model Class
 class cnn_model(HyperModel):
