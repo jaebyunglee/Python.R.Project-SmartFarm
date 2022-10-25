@@ -602,7 +602,7 @@ class MODELING_ANN():
 
         start = time.time()
         input_shape = self.train_x_array.shape[1] # input shape 설정
-        
+        early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5, verbose=1)
         if self.TuneMethod == 'BO' :
             print('='*40)
             print('Tuning Method : Bayesian Optimization'.center(40))    
@@ -640,7 +640,8 @@ class MODELING_ANN():
                              epochs = 10,
                              validation_data = (self.x_vd_scale, self.valid_y_array), # validation data를 입력해 줄 수 있음 (fit 함수와 동일)
                              verbose = 0,
-                             batch_size = 16)
+                             batch_size = 16,
+                             callbacks = [early_stopping])
             except :
                 # 에러 발생 시 다음 Try 시도
                 continue
@@ -819,7 +820,7 @@ class MODELING_LSTM():
             
         # LSTM Build
         input_shape = (self.nTimeSteps, self.train_x_array.shape[2]) # input shape 설정
-        
+        early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5, verbose=1)
         if self.TuneMethod == 'BO' :
             print('='*40)
             print('Tuning Method : Bayesian Optimization'.center(40))    
@@ -858,7 +859,8 @@ class MODELING_LSTM():
                              epochs = 10,
                              validation_data = (self.x_vd_scale, self.valid_y_array), # validation data를 입력해 줄 수 있음 (fit 함수와 동일)
                              verbose = 0,
-                             batch_size = 16)
+                             batch_size = 16,
+                             callbacks = [early_stopping])
             except :
                 # 에러 발생 시 다음 Try 시도
                 continue
@@ -969,7 +971,7 @@ class MODELING_CNN():
         
     def _fit(self):
         start = time.time()
-        
+        early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5, verbose=1)
         if self.TuneMethod == 'BO' :
             print('='*40)
             print('Tuning Method : Bayesian Optimization'.center(40))    
@@ -1008,7 +1010,8 @@ class MODELING_CNN():
                              epochs = 10,
                              validation_data = (self.valid_x, self.valid_y), # validation data를 입력해 줄 수 있음 (fit 함수와 동일)
                              verbose = 0,
-                             batch_size = 32)
+                             batch_size = 32,
+                             callbakcs = [early_stopping])
             except :
                 # 에러 발생 시 다음 Try 시도
                 continue
